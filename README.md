@@ -20,9 +20,10 @@ git clone https://github.com/kriptoe/randomLottery
 ```
 
 ```bash
-You will need to install the chainlink contracts
- cd randomLottery/hardhat
+You will need to install the chainlink contracts and humanize-duration (this just helps display time till the end of lottery)
+ cd randomLottery
  npm install @chainlink/contracts
+ npm install humanize-duration
  
 > install and start your 👷‍ Hardhat chain:
 
@@ -46,7 +47,13 @@ cd randomLottery
 yarn deploy
 ```
 
-🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
+This contract uses the Chainlink VRF Subscription method to generate a random number.
+You can read the documentation about VRF here https://docs.chain.link/vrf/v2/subscription/
+You can try it out for free on Matic and Goerli
+You will need to get a subscription ID and replace the subscriptionID_CHANGE_ME variable in th
+ randomLottery\packages\hardhat\deploy\00_deploy_your_contract.js
+ 
+🔏 Edit your smart contract `Lottery.sol` in `packages/hardhat/contracts`
 
 📝 Edit your frontend `App.jsx` in `packages/react-app/src`
 
