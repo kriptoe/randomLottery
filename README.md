@@ -22,7 +22,7 @@ git clone https://github.com/kriptoe/randomLottery
 > install and start your 👷‍ Hardhat chain:
 
 ```bash
-cd scaffold-eth
+cd randomLottery
 yarn install
 yarn chain
 ```
@@ -30,14 +30,14 @@ yarn chain
 > in a second terminal window, start your 📱 frontend:
 
 ```bash
-cd scaffold-eth
+cd randomLottery
 yarn start
 ```
 
 > in a third terminal window, 🛰 deploy your contract:
 
 ```bash
-cd scaffold-eth
+cd randomLottery
 yarn deploy
 ```
 
