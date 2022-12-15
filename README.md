@@ -19,6 +19,11 @@ Prerequisites: [Node (v18 LTS)](https://nodejs.org/en/download/) plus [Yarn (v1.
 git clone https://github.com/kriptoe/randomLottery
 ```
 
+```bash
+You will need to install the chainlink contracts
+ cd randomLottery/hardhat
+ npm install @chainlink/contracts
+ 
 > install and start your 👷‍ Hardhat chain:
 
 ```bash
