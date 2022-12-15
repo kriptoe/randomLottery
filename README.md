@@ -16,7 +16,7 @@ Prerequisites: [Node (v18 LTS)](https://nodejs.org/en/download/) plus [Yarn (v1.
 > clone/fork 🏗 scaffold-eth:
 
 ```bash
-git clone https://github.com/scaffold-eth/scaffold-eth.git
+git clone https://github.com/kriptoe/randomLottery
 ```
 
 > install and start your 👷‍ Hardhat chain:
