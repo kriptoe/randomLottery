@@ -1,3 +1,4 @@
+# Random Lottery
 View the live version of this app at www.predictoor.xyz
 
 The lottery.sol file was forked from freecodecamp lesson 9 https://www.youtube.com/watch?v=gyMwXuJrbJQ&t=49584s
