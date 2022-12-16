@@ -1,4 +1,4 @@
-import { Button, Col, Menu, Row } from "antd";
+import { Alert, Button, Col, List, Menu, Row, InputNumber, Divider } from "antd";
 
 import "antd/dist/antd.css";
 import {
@@ -15,6 +15,8 @@ import { Link, Route, Switch, useLocation } from "react-router-dom";
 import "./App.css";
 import {
   Account,
+  Address,
+  Balance,
   Contract,
   Faucet,
   GasGauge,
@@ -26,12 +28,13 @@ import {
   NetworkSwitch,
 } from "./components";
 import { NETWORKS, ALCHEMY_KEY } from "./constants";
+import { useEventListener } from "eth-hooks/events/useEventListener";
 import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { getRPCPollTime, Transactor, Web3ModalSetup } from "./helpers";
-import { Home, ExampleUI, Hints, Subgraph } from "./views";
 import { useStaticJsonRPC } from "./hooks";
+const humanizeDuration = require("humanize-duration");
 
 const { ethers } = require("ethers");
 /*
@@ -162,23 +165,6 @@ function App(props) {
   // If you want to bring in the mainnet DAI contract it would look like:
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
 
-  // If you want to call a function on a new block
-  // useOnBlock(mainnetProvider, () => {
-  //   console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
-  // });
-
-  // Then read your DAI balance like:
-  const myMainnetDAIBalance = useContractReader(
-    mainnetContracts,
-    "DAI",
-    "balanceOf",
-    ["0x34aA3F359A9D614239015126635CE7732c18fDF3"],
-    mainnetProviderPollingTime,
-  );
-
-  // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts, "YourContract", "purpose", [], localProviderPollingTime);
-
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:", addressFromENS)
@@ -207,8 +193,6 @@ function App(props) {
       console.log("💵 yourLocalBalance", yourLocalBalance ? ethers.utils.formatEther(yourLocalBalance) : "...");
       console.log("💵 yourMainnetBalance", yourMainnetBalance ? ethers.utils.formatEther(yourMainnetBalance) : "...");
       console.log("📝 readContracts", readContracts);
-      console.log("🌍 DAI contract on mainnet:", mainnetContracts);
-      console.log("💵 yourMainnetDAIBalance", myMainnetDAIBalance);
       console.log("🔐 writeContracts", writeContracts);
     }
   }, [
@@ -221,7 +205,6 @@ function App(props) {
     writeContracts,
     mainnetContracts,
     localChainId,
-    myMainnetDAIBalance,
   ]);
 
   const loadWeb3Modal = useCallback(async () => {
@@ -260,7 +243,40 @@ function App(props) {
     checkSafeApp();
   }, [loadWeb3Modal]);
 
+  const [route, setRoute] = useState();
+  useEffect(() => {
+    setRoute(window.location.pathname);
+  }, [setRoute]);
+
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
+  const lotteryEnterEvent = useEventListener(readContracts, "Lottery", "lotteryEnterEvent ", localProvider, 1);
+  const winnerEvents = useEventListener(readContracts, "Lottery", "WinnerPickedEvent ", localProvider, 1);
+
+  const lotteryNumber = useContractReader(readContracts, "Lottery", "s_lotteryNumber");
+  const lotteryAddress = readContracts && readContracts.Lottery && readContracts.Lottery.address;
+  const contractBalance = useBalance(localProvider, lotteryAddress);
+  const claimPeriodLeft = useContractReader(readContracts, "Lottery", "claimPeriodLeft");
+
+  const [diceRolled, setDiceRolled] = useState(false);
+  const [diceRollImage, setDiceRollImage] = useState(null);
+  const [claiming, setClaiming] = useState(false);
+
+  const [ticketAmount, setTicketAmount] = useState(1);
+  const [ticketPriceString, setTicketString] = useState("1");
+  let totalTicketPrice = 1;
+  // input number handler
+  const onChange = value => {
+    setTicketAmount(value);
+    totalTicketPrice = value * totalTicketPrice;
+    setTicketString(totalTicketPrice.toString());
+    console.log("changed", value);
+  };
+
+  const enterLotteryMultiple = async () => {
+    tx(
+      writeContracts.Lottery.enterLotteryMultiple(ticketAmount, { value: ethers.utils.parseEther(ticketPriceString) }),
+    );
+  };
 
   return (
     <div className="App">
@@ -306,30 +322,21 @@ function App(props) {
       />
       <Menu style={{ textAlign: "center", marginTop: 20 }} selectedKeys={[location.pathname]} mode="horizontal">
         <Menu.Item key="/">
-          <Link to="/">App Home</Link>
+          <Link
+            onClick={() => {
+              setRoute("/");
+            }}
+            to="/"
+          >
+            Lottery
+          </Link>
         </Menu.Item>
         <Menu.Item key="/debug">
           <Link to="/debug">Debug Contracts</Link>
         </Menu.Item>
-        <Menu.Item key="/hints">
-          <Link to="/hints">Hints</Link>
-        </Menu.Item>
-        <Menu.Item key="/exampleui">
-          <Link to="/exampleui">ExampleUI</Link>
-        </Menu.Item>
-        <Menu.Item key="/mainnetdai">
-          <Link to="/mainnetdai">Mainnet DAI</Link>
-        </Menu.Item>
-        <Menu.Item key="/subgraph">
-          <Link to="/subgraph">Subgraph</Link>
-        </Menu.Item>
       </Menu>
 
       <Switch>
-        <Route exact path="/">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Home yourLocalBalance={yourLocalBalance} readContracts={readContracts} />
-        </Route>
         <Route exact path="/debug">
           {/*
                 🎛 this scaffolding is full of commonly used components
@@ -338,7 +345,7 @@ function App(props) {
             */}
 
           <Contract
-            name="YourContract"
+            name="Lottery"
             price={price}
             signer={userSigner}
             provider={localProvider}
@@ -347,60 +354,125 @@ function App(props) {
             contractConfig={contractConfig}
           />
         </Route>
-        <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        </Route>
-        <Route path="/exampleui">
-          <ExampleUI
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            yourLocalBalance={yourLocalBalance}
-            price={price}
-            tx={tx}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            purpose={purpose}
-          />
-        </Route>
-        <Route path="/mainnetdai">
-          <Contract
-            name="DAI"
-            customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-            signer={userSigner}
-            provider={mainnetProvider}
-            address={address}
-            blockExplorer="https://etherscan.io/"
-            contractConfig={contractConfig}
-            chainId={1}
-          />
-          {/*
-            <Contract
-              name="UNI"
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.UNI}
-              signer={userSigner}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer="https://etherscan.io/"
-            />
-            */}
-        </Route>
-        <Route path="/subgraph">
-          <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-          />
-        </Route>
       </Switch>
+      <Switch>
+        <Route exact path="/">
+          <div style={{ display: "flex" }}>
+            <div style={{ width: 250, margin: "auto", marginTop: 64 }}>
+              <div>Buy Ticket Events:</div>
+              <List
+                style={{ height: 258, overflow: "hidden" }}
+                dataSource={lotteryEnterEvent}
+                renderItem={item => {
+                  return (
+                    <List.Item>
+                      Address <Address value={item.args[0]} fontSize={16} />
+                      Draw#{item.args[2].toString()} Ticket #{item.args[1].toString()}
+                    </List.Item>
+                  );
+                }}
+              />
+            </div>
+            <div id="centerWrapper" style={{ padding: 16 }}>
+              <h2>UnRuggable Lottery </h2>
 
+              <div>
+                Lottery #{lotteryNumber && lotteryNumber.toString()}{" "}
+                <h2>
+                  Current Jackpot = {contractBalance && ethers.utils.formatEther(contractBalance.toString())} MATIC{" "}
+                </h2>
+              </div>
+              <div>Lottery Ends in : {claimPeriodLeft && humanizeDuration(claimPeriodLeft.toNumber() * 1000)}</div>
+              <div>
+                <InputNumber
+                  min={1}
+                  max={100}
+                  placeholder={"Enter number of tickets"}
+                  onChange={onChange}
+                  style={{ width: 200 }}
+                />
+                <br />
+                <Button
+                  onClick={() => {
+                    try {
+                      tx(
+                        writeContracts.Lottery.enterLotteryMultiple(ticketAmount, {
+                          value: ethers.utils.parseEther(ticketPriceString),
+                        }),
+                      );
+                    } catch (err) {
+                      alert("Try logging out off metamask and logging back in, Working on a fix for this \n " + err);
+                    }
+                  }}
+                >
+                  Buy Ticket
+                </Button>
+                <Divider />
+                <div>
+                  <table>
+                    <tr>
+                      <td width="300">
+                        A weekly un-ruggable lottery (no owner withdraw function) that uses Chainlink Random Number to
+                        choose the winner.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td width="300">
+                        <br />
+                        <a
+                          href="https://polygonscan.com/address/0x53859E414CA5192445c5E2c162403afdb10870b2"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Contract Address
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ width: 250, margin: "auto", marginTop: 32 }}>
+              <div>Previous Winners :</div>
+              <List
+                style={{ height: 258, overflow: "hidden" }}
+                dataSource={winnerEvents}
+                renderItem={item => {
+                  return (
+                    <List.Item>
+                      Draw Number {item.args[2].toString()}
+                      <Address value={item.args[0]} fontSize={16} />
+                      <Balance balance={item.args[1]} />
+                    </List.Item>
+                  );
+                }}
+              />
+            </div>
+          </div>
+        </Route>
+        <Route exact path="/about">
+          <div>This is a decentralised contract that has enough Link token loaded up to run for the next 2 years.</div>
+        </Route>
+        {/*    <Route exact path="/debug">
+            
+                🎛 this scaffolding is full of commonly used components
+                this <Contract/> component will automatically parse your ABI
+                and give you a form to interact with it locally
+            
+
+            <Contract
+              name="Lottery"
+              price={price}
+              signer={userSigner}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
+          </Route>   
+          */}
+      </Switch>
       <ThemeSwitch />
 
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}

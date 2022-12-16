@@ -5,7 +5,7 @@ export const INFURA_ID = "460f40a260564ac4a4f4b3fffb032dad";
 export const ETHERSCAN_KEY = "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
 
 // BLOCKNATIVE ID FOR Notify.js:
-export const BLOCKNATIVE_DAPPID = "0b58206a-f3c0-4701-a62f-73c7243e8c77";
+export const BLOCKNATIVE_DAPPID = "354bea73-69ea-4c28-88c0-65a8b1c19ac8";
 
 export const ALCHEMY_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 
@@ -29,14 +29,38 @@ export const NETWORKS = {
     color: "#666666",
     chainId: 31337,
     blockExplorer: "",
-    rpcUrl: localRpcUrl,
+    rpcUrl: "http://" + (global.window ? window.location.hostname : "localhost") + ":8545",
   },
   mainnet: {
     name: "mainnet",
     color: "#ff8b9e",
     chainId: 1,
-    rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+    rpcUrl: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
     blockExplorer: "https://etherscan.io/",
+  },
+  kovan: {
+    name: "kovan",
+    color: "#7003DD",
+    chainId: 42,
+    rpcUrl: `https://kovan.infura.io/v3/${INFURA_ID}`,
+    blockExplorer: "https://kovan.etherscan.io/",
+    faucet: "https://gitter.im/kovan-testnet/faucet", // https://faucet.kovan.network/
+  },
+  rinkeby: {
+    name: "rinkeby",
+    color: "#e0d068",
+    chainId: 4,
+    rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
+    faucet: "https://faucet.rinkeby.io/",
+    blockExplorer: "https://rinkeby.etherscan.io/",
+  },
+  ropsten: {
+    name: "ropsten",
+    color: "#F60D09",
+    chainId: 3,
+    faucet: "https://faucet.ropsten.be/",
+    blockExplorer: "https://ropsten.etherscan.io/",
+    rpcUrl: `https://ropsten.infura.io/v3/${INFURA_ID}`,
   },
   goerli: {
     name: "goerli",
@@ -56,14 +80,15 @@ export const NETWORKS = {
     faucet: "https://xdai-faucet.top/",
     blockExplorer: "https://blockscout.com/poa/xdai/",
   },
-  polygon: {
-    name: "polygon",
+  matic: {
+    name: "matic",
     color: "#2bbdf7",
     chainId: 137,
     price: 1,
     gasPrice: 1000000000,
-    rpcUrl: "https://polygon-rpc.com/",
-    blockExplorer: "https://polygonscan.com/",
+    rpcUrl: "https://rpc-mainnet.maticvigil.com",
+    faucet: "https://faucet.matic.network/",
+    blockExplorer: "https://explorer-mainnet.maticvigil.com//",
   },
   mumbai: {
     name: "mumbai",
@@ -72,8 +97,37 @@ export const NETWORKS = {
     price: 1,
     gasPrice: 1000000000,
     rpcUrl: "https://rpc-mumbai.maticvigil.com",
-    faucet: "https://faucet.polygon.technology/",
-    blockExplorer: "https://mumbai.polygonscan.com/",
+    faucet: "https://faucet.matic.network/",
+    blockExplorer: "https://mumbai-explorer.matic.today/",
+  },
+  localArbitrum: {
+    name: "localArbitrum",
+    color: "#50a0ea",
+    chainId: 153869338190755,
+    blockExplorer: "",
+    rpcUrl: `http://localhost:8547`,
+  },
+  localArbitrumL1: {
+    name: "localArbitrumL1",
+    color: "#50a0ea",
+    chainId: 44010,
+    blockExplorer: "",
+    rpcUrl: `http://localhost:7545`,
+  },
+  rinkebyArbitrum: {
+    name: "Arbitrum Testnet",
+    color: "#50a0ea",
+    chainId: 421611,
+    blockExplorer: "https://rinkeby-explorer.arbitrum.io/#/",
+    rpcUrl: `https://rinkeby.arbitrum.io/rpc`,
+  },
+  arbitrum: {
+    name: "Arbitrum",
+    color: "#50a0ea",
+    chainId: 42161,
+    blockExplorer: "https://explorer.arbitrum.io/#/",
+    rpcUrl: `https://arb1.arbitrum.io/rpc`,
+    gasPrice: 0,
   },
   localOptimismL1: {
     name: "localOptimismL1",
@@ -90,12 +144,12 @@ export const NETWORKS = {
     rpcUrl: "http://" + (global.window ? window.location.hostname : "localhost") + ":8545",
     gasPrice: 0,
   },
-  goerliOptimism: {
-    name: "goerliOptimism",
+  kovanOptimism: {
+    name: "kovanOptimism",
     color: "#f01a37",
-    chainId: 420,
-    blockExplorer: "https://optimism.io",
-    rpcUrl: `https://goerli.optimism.io/`,
+    chainId: 69,
+    blockExplorer: "https://kovan-optimistic.etherscan.io/",
+    rpcUrl: `https://kovan.optimism.io`,
     gasPrice: 0,
   },
   optimism: {
@@ -104,27 +158,6 @@ export const NETWORKS = {
     chainId: 10,
     blockExplorer: "https://optimistic.etherscan.io/",
     rpcUrl: `https://mainnet.optimism.io`,
-  },
-  goerliArbitrum: {
-    name: "goerliArbitrum",
-    color: "#28a0f0",
-    chainId: 421613,
-    blockExplorer: "https://goerli-rollup-explorer.arbitrum.io",
-    rpcUrl: "https://goerli-rollup.arbitrum.io/rpc/",
-  },
-  arbitrum: {
-    name: "arbitrum",
-    color: "#28a0f0",
-    chainId: 42161,
-    blockExplorer: "https://arbiscan.io/",
-    rpcUrl: "https://arb1.arbitrum.io/rpc",
-  },
-  devnetArbitrum: {
-    name: "devnetArbitrum",
-    color: "#28a0f0",
-    chainId: 421612,
-    blockExplorer: "https://nitro-devnet-explorer.arbitrum.io/",
-    rpcUrl: "https://nitro-devnet.arbitrum.io/rpc",
   },
   localAvalanche: {
     name: "localAvalanche",
@@ -151,7 +184,7 @@ export const NETWORKS = {
     gasPrice: 225000000000,
   },
   testnetHarmony: {
-    name: "testnetHarmony",
+    name: "Harmony Testnet",
     color: "#00b0ef",
     chainId: 1666700000,
     blockExplorer: "https://explorer.pops.one/",
@@ -159,58 +192,12 @@ export const NETWORKS = {
     gasPrice: 1000000000,
   },
   mainnetHarmony: {
-    name: "mainnetHarmony",
+    name: "Harmony Mainnet",
     color: "#00b0ef",
     chainId: 1666600000,
     blockExplorer: "https://explorer.harmony.one/",
     rpcUrl: `https://api.harmony.one`,
     gasPrice: 1000000000,
-  },
-  fantom: {
-    name: "fantom",
-    color: "#1969ff",
-    chainId: 250,
-    blockExplorer: "https://ftmscan.com/",
-    rpcUrl: `https://rpcapi.fantom.network`,
-    gasPrice: 1000000000,
-  },
-  testnetFantom: {
-    name: "testnetFantom",
-    color: "#1969ff",
-    chainId: 4002,
-    blockExplorer: "https://testnet.ftmscan.com/",
-    rpcUrl: `https://rpc.testnet.fantom.network`,
-    gasPrice: 1000000000,
-    faucet: "https://faucet.fantom.network/",
-  },
-  moonbeam: {
-    name: "moonbeam",
-    color: "#53CBC9",
-    chainId: 1284,
-    blockExplorer: "https://moonscan.io",
-    rpcUrl: "https://rpc.api.moonbeam.network",
-  },
-  moonriver: {
-    name: "moonriver",
-    color: "#53CBC9",
-    chainId: 1285,
-    blockExplorer: "https://moonriver.moonscan.io/",
-    rpcUrl: "https://rpc.api.moonriver.moonbeam.network",
-  },
-  moonbaseAlpha: {
-    name: "moonbaseAlpha",
-    color: "#53CBC9",
-    chainId: 1287,
-    blockExplorer: "https://moonbase.moonscan.io/",
-    rpcUrl: "https://rpc.api.moonbase.moonbeam.network",
-    faucet: "https://discord.gg/SZNP8bWHZq",
-  },
-  moonbeamDevNode: {
-    name: "moonbeamDevNode",
-    color: "#53CBC9",
-    chainId: 1281,
-    blockExplorer: "https://moonbeam-explorer.netlify.app/",
-    rpcUrl: "http://127.0.0.1:9933",
   },
 };
 
